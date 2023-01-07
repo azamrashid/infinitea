@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HomeLayout from '../components/layouts/HomeLayout';
 import Card from '../components/ui/Card';
 
@@ -14,38 +14,46 @@ export default function Home() {
   /**
    * Fetch images from the Unsplash API and append the results to your `images` array
    */
-  const fetchImages = async () => {};
+  const fetchImages = async () => {
+    const response = await fetch(`${BASE_URL}?query=landscape&page=${page}`, {
+      headers: {
+        Authorization: `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH}`,
+      },
+    });
+    const { results } = await response.json();
+    setImages((prev) => [...prev, ...results]);
+  };
 
   /**
    * useEffect to trigger the `fetchImages` function whenever `page` updates
    */
-  // useEffect here
-
+  useEffect(() => {
+    fetchImages();
+  }, [page]);
   // ------- Render --------
   return (
     <>
       <Head>
-        <title>Infinitea</title>
-        <meta name="description" content="Lotta tea pictures from Unsplash" />
+        <title>World Nature Pedia</title>
+        <meta name="description" content="Lotta Landscape pictures from Unsplash" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       {/* Home */}
       <HomeLayout>
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-        <Card />
-      </HomeLayout>
+      {images.map((image, index) => (
+    <Card
+      key={image.id}
+      imgSrc={image.urls.regular}
+      imgAlt={image.alt_description}
+      shotBy={image.user.name}
+      creditUrl={image.links.html}
+      isLast={index === images.length - 1}
+      newLimit={() => setPage(page + 1)}
+    />
+  ))}
+      </HomeLayout>;
     </>
   );
 }
